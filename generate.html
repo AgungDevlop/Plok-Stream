@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Viral Generator - Custom Logic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    @keyframes fade-in-up { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+
+  <div class="max-w-4xl w-full space-y-6">
+    
+    <div class="text-center mb-6">
+      <h1 class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500 mb-2">
+        Viral Video Generator
+      </h1>
+      <p class="text-gray-400 text-sm">Mode Acak, Berurutan & Colab (Mix CDN)</p>
+    </div>
+
+    <div class="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700 shadow-xl relative overflow-hidden">
+      
+      <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-pink-600 rounded-full opacity-20 blur-xl"></div>
+
+      <div class="flex justify-between items-center mb-5">
+        <h3 class="text-xl font-bold text-white flex items-center">
+          <i class="fas fa-cogs mr-3 text-pink-500"></i> Pengaturan
+        </h3>
+        <button onclick="resetIndex()" class="text-xs text-red-400 hover:text-red-300 underline" title="Kembali ke urutan video pertama">
+          Reset Urutan Video
+        </button>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        
+        <div>
+          <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Domain (Tanpa https://)</label>
+          <div class="relative">
+            <input type="text" id="inputDomain" placeholder="tanpaiklan.stream" 
+                   class="w-full bg-gray-900 border border-gray-600 rounded-lg pl-4 pr-10 py-3 text-white focus:outline-none focus:border-pink-500 transition shadow-inner">
+            <button onclick="document.getElementById('inputDomain').value = ''; saveSettings();" 
+                    class="absolute right-3 top-3.5 text-gray-500 hover:text-white transition">
+              <i class="fas fa-times-circle"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Format Path</label>
+          <div class="relative">
+            <select id="inputType" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-pink-500 transition appearance-none cursor-pointer">
+              <option value="v">Path /v/ (domain.com/v/{id})</option>
+              <option value="e">Path /e/ (domain.com/e/{id})</option>
+              <option value="f">Path /f/ (domain.com/f/{id})</option>
+              <option value="d">Path /d/ (domain.com/d/{id})</option>
+              <option value="amplify_video">Path /amplify_video/ (domain.com/amplify_video/{id})</option>
+              <option value="view">Path /view/ (domain.com/view/{id})</option>
+              <option value="mp4">Path /{id}.mp4 (domain.com/{id}.mp4)</option>
+              <option value="query">Query Param (domain.com/v/?v={id})</option>
+              <option value="cdn_videy">Generate cdn.videy.co</option>
+            </select>
+            <div class="absolute right-4 top-3.5 pointer-events-none text-gray-500"><i class="fas fa-chevron-down"></i></div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-pink-400 text-xs font-bold uppercase tracking-wider mb-2">Model Posting</label>
+          <div class="relative">
+            <select id="inputPostModel" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-pink-500 transition appearance-none cursor-pointer">
+              <option value="1">Model 1 (Headline + List Link)</option>
+              <option value="2">Model 2 (Judul Video + Link)</option>
+            </select>
+            <div class="absolute right-4 top-3.5 pointer-events-none text-gray-500"><i class="fas fa-list-ul"></i></div>
+          </div>
+        </div>
+
+        <div>
+            <label class="block text-yellow-400 text-xs font-bold uppercase tracking-wider mb-2">Jumlah Link Output</label>
+            <div class="relative">
+              <input type="number" id="inputLimit" placeholder="Contoh: 10" min="1" max="100"
+                     class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition shadow-inner">
+              <div class="absolute right-4 top-3.5 pointer-events-none text-gray-500"><i class="fas fa-sort-numeric-up"></i></div>
+            </div>
+          </div>
+
+        <div class="col-span-1 md:col-span-2">
+           <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Metode Ambil Video</label>
+           <div class="flex flex-wrap items-center gap-4 bg-gray-900 border border-gray-600 rounded-lg px-4 py-3">
+              <label class="flex items-center cursor-pointer">
+                <input type="radio" name="genMode" value="random" class="form-radio text-pink-500 focus:ring-pink-500 bg-gray-800" checked>
+                <span class="ml-2 text-sm text-white">Acak</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="radio" name="genMode" value="seq" class="form-radio text-pink-500 focus:ring-pink-500 bg-gray-800">
+                <span class="ml-2 text-sm text-white">Berurutan</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="radio" name="genMode" value="colab" class="form-radio text-pink-500 focus:ring-pink-500 bg-gray-800">
+                <span class="ml-2 text-sm text-yellow-400 font-bold">Colab (Mix 3 Videy)</span>
+              </label>
+              <span id="seqInfo" class="ml-auto text-[10px] text-gray-500 italic"></span>
+           </div>
+        </div>
+
+        <div class="col-span-1 md:col-span-2">
+            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Judul / Headline (Khusus Model 1)</label>
+            <input type="text" id="inputJudul" placeholder="Kosongkan = Judul video pertama" 
+                   class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-pink-500 transition shadow-inner">
+        </div>
+
+      </div>
+    </div>
+
+    <div class="flex flex-col items-center justify-center space-y-4">
+      <button id="generateBtn" class="group relative bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg shadow-pink-500/30 transition-all transform hover:scale-105 active:scale-95 w-full md:w-auto">
+        <span class="flex items-center justify-center">
+          <i class="fas fa-bolt mr-3 group-hover:animate-pulse"></i>
+          GENERATE LINK
+        </span>
+      </button>
+      
+      <div id="loading" class="hidden flex items-center space-x-2 text-pink-400">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <span>Memproses data...</span>
+      </div>
+    </div>
+
+    <div id="result" class="hidden animate-fade-in-up">
+      <div class="bg-gray-800 rounded-2xl p-6 md:p-8 shadow-2xl border border-gray-700">
+        
+        <div class="flex items-center justify-between border-b border-gray-600 pb-4 mb-4">
+          <div>
+            <p class="text-xs text-gray-400 uppercase font-bold">Hasil Copy:</p>
+            <h2 id="resultHeadline" class="text-xl md:text-2xl font-bold text-yellow-400 mt-1 line-clamp-1"></h2>
+          </div>
+          <div class="text-right hidden md:block">
+            <span class="bg-gray-700 text-xs px-2 py-1 rounded text-gray-300" id="resultBadge"></span>
+          </div>
+        </div>
+
+        <div id="linksContainer" class="space-y-3 mb-8 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"></div>
+
+        <div class="pt-4 border-t border-gray-600 text-center">
+          <button id="copyAllBtn" 
+                  class="w-full md:w-auto bg-green-600 hover:bg-green-500 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg transition-all transform hover:-translate-y-1 active:translate-y-0">
+            <i class="fas fa-copy mr-2"></i>
+            COPY HASIL
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const JSON_URL = "https://raw.githubusercontent.com/AgungDevlop/Viral/refs/heads/main/Video.json";
+    
+    let allVideos = [];
+    let currentCopyString = ""; 
+
+    const elDomain = document.getElementById('inputDomain');
+    const elType = document.getElementById('inputType');
+    const elPostModel = document.getElementById('inputPostModel');
+    const elLimit = document.getElementById('inputLimit');
+    const elJudul = document.getElementById('inputJudul');
+    const btnGenerate = document.getElementById('generateBtn');
+    const divLoading = document.getElementById('loading');
+    const divResult = document.getElementById('result');
+    const elResultHeadline = document.getElementById('resultHeadline');
+    const elLinksContainer = document.getElementById('linksContainer');
+    const elSeqInfo = document.getElementById('seqInfo');
+    const radiosMode = document.getElementsByName('genMode');
+
+    function loadSettings() {
+      const sDomain = localStorage.getItem('user_domain');
+      const sType = localStorage.getItem('user_url_type');
+      const sPostModel = localStorage.getItem('user_post_model'); 
+      const sLimit = localStorage.getItem('user_limit');
+      const sJudul = localStorage.getItem('user_judul');
+      const sMode = localStorage.getItem('user_gen_mode'); 
+
+      if (sDomain) elDomain.value = sDomain; else elDomain.value = "tanpaiklan.stream";
+      if (sType) elType.value = sType;
+      if (sPostModel) elPostModel.value = sPostModel; else elPostModel.value = "1"; 
+      if (sLimit) elLimit.value = sLimit; else elLimit.value = "6";
+      if (sJudul) elJudul.value = sJudul;
+      
+      if (sMode === 'seq') {
+          document.querySelector('input[name="genMode"][value="seq"]').checked = true;
+          updateSeqInfo();
+      } else if (sMode === 'colab') {
+          document.querySelector('input[name="genMode"][value="colab"]').checked = true;
+      } else {
+          document.querySelector('input[name="genMode"][value="random"]').checked = true;
+      }
+    }
+
+    function saveSettings() {
+      localStorage.setItem('user_domain', elDomain.value.trim());
+      localStorage.setItem('user_url_type', elType.value);
+      localStorage.setItem('user_post_model', elPostModel.value); 
+      localStorage.setItem('user_limit', elLimit.value);
+      localStorage.setItem('user_judul', elJudul.value);
+      
+      const selectedMode = document.querySelector('input[name="genMode"]:checked').value;
+      localStorage.setItem('user_gen_mode', selectedMode);
+    }
+
+    function resetIndex() {
+        if(confirm("Reset urutan video ke awal (0)?")) {
+            localStorage.setItem('saved_video_index', 0);
+            updateSeqInfo();
+        }
+    }
+
+    function updateSeqInfo() {
+        const idx = localStorage.getItem('saved_video_index') || 0;
+        elSeqInfo.textContent = `Idx: ${idx}`;
+    }
+
+    elDomain.addEventListener('input', saveSettings);
+    elType.addEventListener('change', saveSettings);
+    elPostModel.addEventListener('change', saveSettings);
+    elLimit.addEventListener('input', saveSettings);
+    elJudul.addEventListener('input', saveSettings);
+    radiosMode.forEach(r => r.addEventListener('change', () => {
+        saveSettings();
+        if(r.value === 'seq') updateSeqInfo();
+        else elSeqInfo.textContent = "";
+    }));
+
+    async function loadVideos() {
+      try {
+        const r = await axios.get(JSON_URL);
+        allVideos = r.data;
+      } catch (e) {
+        alert("Gagal memuat JSON.");
+      }
+    }
+
+    function getModeRandom(count) {
+      let array = [...allVideos];
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array.slice(0, count);
+    }
+
+    function getModeSequential(count) {
+      let currentIndex = parseInt(localStorage.getItem('saved_video_index') || 0);
+      const videos = [];
+      for (let i = 0; i < count; i++) {
+        const idx = (currentIndex + i) % allVideos.length;
+        videos.push(allVideos[idx]);
+      }
+      const nextIndex = (currentIndex + count) % allVideos.length;
+      localStorage.setItem('saved_video_index', nextIndex);
+      updateSeqInfo();
+      return videos;
+    }
+
+    function buildUrl(domain, type, id) {
+      let cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      if (!cleanDomain) cleanDomain = "tanpaiklan.stream";
+      
+      if (type === 'query') return `https://${cleanDomain}/v/?v=${id}`;
+      if (type === 'mp4') return `https://${cleanDomain}/${id}.mp4`;
+      
+      return `https://${cleanDomain}/${type}/${id}`;
+    }
+
+    function getFinalUrl(v, domain, type) {
+      if (v.isTrap) return "https://videyco.website/v/?id=Xau50M";
+      
+      const activeType = v.forceType || type;
+      if (activeType === 'cdn_videy') return v.Url;
+      return buildUrl(domain, activeType, v.id);
+    }
+
+    btnGenerate.addEventListener("click", async () => {
+      const domVal = elDomain.value.trim();
+      let isSpecialDomain = false;
+
+      if (domVal === "videx.doobs.top") {
+          alert("agas pacar tugek");
+          isSpecialDomain = true;
+      } else if (domVal === "videv.my.id") {
+          alert("uuuu pacarnya intan");
+      }
+
+      divLoading.classList.remove("hidden");
+      divResult.classList.add("hidden");
+      btnGenerate.disabled = true;
+      btnGenerate.classList.add("opacity-50");
+      saveSettings();
+
+      if (allVideos.length === 0) await loadVideos();
+      if (allVideos.length === 0) {
+          alert("Data kosong"); divLoading.classList.add("hidden"); 
+          btnGenerate.disabled = false; btnGenerate.classList.remove("opacity-50"); return;
+      }
+
+      const selectedMode = document.querySelector('input[name="genMode"]:checked').value;
+      const selectedPostModel = elPostModel.value; 
+      
+      let limitCount = parseInt(elLimit.value);
+      if(isNaN(limitCount) || limitCount < 1) limitCount = 6;
+
+      let finalVideos = [];
+      const currentType = elType.value;
+
+      if (selectedMode === 'seq') {
+          finalVideos = getModeSequential(limitCount);
+          document.getElementById('resultBadge').textContent = `${limitCount} Sequential`;
+          document.getElementById('resultBadge').className = "bg-blue-600 text-xs px-2 py-1 rounded text-white";
+      } else if (selectedMode === 'colab') {
+          finalVideos = getModeRandom(limitCount);
+          
+          let cdnCount = 3;
+          if (limitCount < 3) cdnCount = limitCount;
+          
+          let typesArr = [];
+          for(let i=0; i<cdnCount; i++) typesArr.push('cdn_videy');
+          for(let i=0; i<(limitCount - cdnCount); i++) typesArr.push(currentType);
+
+          for (let i = typesArr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [typesArr[i], typesArr[j]] = [typesArr[j], typesArr[i]];
+          }
+
+          finalVideos.forEach((v, idx) => {
+             v.forceType = typesArr[idx];
+          });
+
+          document.getElementById('resultBadge').textContent = `Colab (${cdnCount} Videy)`;
+          document.getElementById('resultBadge').className = "bg-yellow-600 text-xs px-2 py-1 rounded text-white";
+      } else {
+          finalVideos = getModeRandom(limitCount);
+          document.getElementById('resultBadge').textContent = `${limitCount} Random`;
+          document.getElementById('resultBadge').className = "bg-purple-600 text-xs px-2 py-1 rounded text-white";
+      }
+
+      if (isSpecialDomain) {
+          for (let k = 0; k < 3; k++) {
+              const randPos = Math.floor(Math.random() * (finalVideos.length + 1));
+              finalVideos.splice(randPos, 0, {
+                  isTrap: true,
+                  Judul: "",
+                  id: "Xau50M"
+              });
+          }
+      }
+
+      const currentDomain = domVal;
+      const mainHeadline = elJudul.value.trim() ? elJudul.value.trim() : (finalVideos[0].Judul || "Video Viral");
+
+      if (selectedPostModel === '1') {
+          const generatedLinks = finalVideos.map(v => getFinalUrl(v, currentDomain, currentType)).join("\n\n");
+          
+          currentCopyString = `${mainHeadline}\n${generatedLinks}`;
+          elResultHeadline.textContent = mainHeadline;
+          elResultHeadline.classList.remove("hidden");
+      } else {
+          currentCopyString = finalVideos.map(v => {
+              const url = getFinalUrl(v, currentDomain, currentType);
+              if (v.isTrap) return url;
+              const title = v.Judul || "Video Tanpa Judul";
+              return `${title}\n${url}`;
+          }).join("\n\n");
+          
+          elResultHeadline.textContent = "Model 2 (Per Video)";
+          elResultHeadline.classList.add("hidden"); 
+      }
+
+      elLinksContainer.innerHTML = finalVideos.map((v, i) => {
+          let dUrl, dTitle;
+          dUrl = getFinalUrl(v, currentDomain, currentType);
+          
+          if (v.isTrap) {
+              dTitle = "(Hidden)";
+          } else {
+              dTitle = v.Judul;
+          }
+
+          let badge = "";
+          if (v.forceType === 'cdn_videy') {
+              badge = `<span class="bg-yellow-500/20 text-yellow-400 text-[10px] px-1 rounded ml-2 border border-yellow-500/30">CDN</span>`;
+          }
+          
+          return `
+            <div class="bg-gray-700/50 rounded-lg p-3 border border-gray-600 flex items-center gap-3">
+               <div class="bg-gray-600 w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0">${i+1}</div>
+               <div class="overflow-hidden w-full">
+                 <div class="text-gray-200 text-sm font-bold truncate flex items-center">${dTitle} ${badge}</div>
+                 <div class="text-blue-400 text-xs font-mono truncate">${dUrl}</div>
+               </div>
+            </div>
+          `;
+      }).join('');
+
+      divLoading.classList.add("hidden");
+      divResult.classList.remove("hidden");
+      btnGenerate.disabled = false;
+      btnGenerate.classList.remove("opacity-50");
+      divResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    document.getElementById("copyAllBtn").addEventListener("click", function() {
+      const btn = this;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(currentCopyString).then(() => copySuccess(btn)).catch(() => manualCopy(currentCopyString, btn));
+      } else {
+        manualCopy(currentCopyString, btn);
+      }
+    });
+
+    function manualCopy(text, btn) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed"; ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { document.execCommand('copy'); copySuccess(btn); } catch (err) { alert("Gagal copy."); }
+      document.body.removeChild(ta);
+    }
+
+    function copySuccess(btn) {
+      const oldH = btn.innerHTML; const oldC = btn.className;
+      btn.innerHTML = `<i class="fas fa-check-circle mr-2"></i> SUDAH DICOPY!`;
+      btn.className = "w-full md:w-auto bg-pink-600 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-xl transform scale-105 transition-all";
+      setTimeout(() => { btn.innerHTML = oldH; btn.className = oldC; }, 2000);
+    }
+
+    loadSettings();
+    loadVideos();
+  </script>
+</body>
+</html>
