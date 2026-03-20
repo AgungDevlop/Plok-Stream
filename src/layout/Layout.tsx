@@ -21,16 +21,40 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && (navigator as any).standalone);
+    const isDismissed = localStorage.getItem('plok_pwa_dismissed') === 'true';
+
+    if (isStandalone || isDismissed) {
+      return;
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      if (!localStorage.getItem('plok_pwa_dismissed')) {
-        setTimeout(() => setShowPwaAlert(true), 4000);
-      }
-    });
+      setTimeout(() => {
+        if (!localStorage.getItem('plok_pwa_dismissed')) {
+          setShowPwaAlert(true);
+        }
+      }, 4000);
+    };
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleAppInstalled = () => {
+      setShowPwaAlert(false);
+      setDeferredPrompt(null);
+      localStorage.setItem('plok_pwa_dismissed', 'true');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -46,9 +70,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
-        setDeferredPrompt(null);
-        setShowPwaAlert(false);
+        localStorage.setItem('plok_pwa_dismissed', 'true');
       }
+      setDeferredPrompt(null);
+      setShowPwaAlert(false);
     }
   };
 
