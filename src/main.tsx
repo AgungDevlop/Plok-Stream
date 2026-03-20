@@ -1,80 +1,35 @@
-// src/main.tsx
-
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { RouterProvider, createHashRouter, useSearchParams } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
-
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import { Contact } from "./pages/Contact.tsx";
+import { Home } from "./pages/Home.tsx";
 import { PlayVideo } from "./pages/PlayVideo.tsx";
 import { Download } from "./pages/Download.tsx";
-import Redirect from "./pages/Redirect.tsx";
-import { Home } from "./pages/Home.tsx"; // Impor komponen Home yang baru
 
-const router = createBrowserRouter([
+const ContentWrapper = () => {
+  const [searchParams] = useSearchParams();
+  const v = searchParams.get("v");
+  return v ? <PlayVideo /> : <Home />;
+};
+
+const router = createHashRouter([
   {
     path: "/",
     element: <App />,
     children: [
-      {
-        index: true,
-        element: <Home />,
-      },
-      { 
-        path: "search",
-        element: <PlayVideo /> 
-      },
-      {
-        path: ":id", // Rute dinamis berdasarkan ID
-        element: <PlayVideo />,
-      },
-      {
-        path: "e/:id", // Rute baru untuk format `/e/:id`
-        element: <PlayVideo />,
-      },
-      {
-        path: "d/:id", // Rute baru untuk format `/e/:id`
-        element: <PlayVideo />,
-      },
-      {
-        path: "v/:id", // Rute baru untuk format `/e/:id`
-        element: <PlayVideo />,
-      },
-      {
-        path: "f/:id", // Rute baru untuk format `/e/:id`
-        element: <PlayVideo />,
-      },
-      {
-        path: "play/:id", // Rute baru untuk format `/e/:id`
-        element: <PlayVideo />,
-      },
-      {
-        path: "view/:id", // Rute baru untuk format `/e/:id`
-        element: <PlayVideo />,
-      },
-      {
-        path: "share/:id", // Rute baru untuk format `/e/:id`
-        element: <PlayVideo />,
-      },
-      {
-        path: "download", // Rute untuk halaman Download
-        element: <Download />,
-      },
-      {
-        path: "contact", // Rute untuk halaman Contact
-        element: <Contact />,
-      },
-      {
-        path: "s/:id",
-        element: <Redirect />,
-      },
+      { index: true, element: <ContentWrapper /> },
+      { path: "play/:id", element: <PlayVideo /> },
+      { path: "download", element: <Download /> }
     ],
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <HelmetProvider>
+      <RouterProvider router={router} />
+    </HelmetProvider>
   </React.StrictMode>
 );

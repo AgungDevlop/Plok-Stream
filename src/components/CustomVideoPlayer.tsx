@@ -86,14 +86,44 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ src, title }) => 
   
   const shareUrl = window.location.href;
   const shareTitle = title;
-  const handleShare = (platform: 'facebook' | 'twitter' | 'whatsapp' | 'telegram') => { let url = ''; switch (platform) { case 'facebook': url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`; break; case 'twitter': url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`; break; case 'whatsapp': url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`; break; case 'telegram': url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`; break; } window.open(url, '_blank'); setIsSharePanelOpen(false); };
-  const handleCopyLink = () => { navigator.clipboard.writeText(shareUrl); alert('Link copied to clipboard!'); setIsSharePanelOpen(false); };
-  useEffect(() => { const video = videoRef.current; if (video) { video.play().catch(() => setIsPlaying(false)); const setVideoDuration = () => setDuration(video.duration); video.addEventListener('loadedmetadata', setVideoDuration); const onFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement); document.addEventListener('fullscreenchange', onFullscreenChange); return () => { video.removeEventListener('loadedmetadata', setVideoDuration); document.removeEventListener('fullscreenchange', onFullscreenChange); } } }, [src]);
+  
+  const handleShare = (platform: 'facebook' | 'twitter' | 'whatsapp' | 'telegram') => { 
+    let url = ''; 
+    switch (platform) { 
+      case 'facebook': url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`; break; 
+      case 'twitter': url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`; break; 
+      case 'whatsapp': url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`; break; 
+      case 'telegram': url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`; break; 
+    } 
+    window.open(url, '_blank'); 
+    setIsSharePanelOpen(false); 
+  };
+  
+  const handleCopyLink = () => { 
+    navigator.clipboard.writeText(shareUrl); 
+    alert('Link copied to clipboard!'); 
+    setIsSharePanelOpen(false); 
+  };
+  
+  useEffect(() => { 
+    const video = videoRef.current; 
+    if (video) { 
+      video.play().catch(() => setIsPlaying(false)); 
+      const setVideoDuration = () => setDuration(video.duration); 
+      video.addEventListener('loadedmetadata', setVideoDuration); 
+      const onFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement); 
+      document.addEventListener('fullscreenchange', onFullscreenChange); 
+      return () => { 
+        video.removeEventListener('loadedmetadata', setVideoDuration); 
+        document.removeEventListener('fullscreenchange', onFullscreenChange); 
+      } 
+    } 
+  }, [src]);
 
   return (
     <div 
         ref={containerRef} 
-        className="relative w-full aspect-video bg-black cursor-pointer"
+        className="relative w-full aspect-video bg-black cursor-pointer rounded-xl overflow-hidden shadow-2xl shadow-black/50 border border-slate-800"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => {
             clearTimeout(controlsTimeout);
@@ -114,51 +144,51 @@ const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({ src, title }) => 
       
       {!isPlaying && (
           <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-black/50 p-4 rounded-full transition-transform hover:scale-110"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-blue-600/80 backdrop-blur-md p-5 rounded-full transition-transform duration-300 hover:scale-110 shadow-lg shadow-blue-500/30"
             onClick={handleMainInteraction}
           >
-            <FaPlay size={40} className="text-white ml-1" />
+            <FaPlay size={36} className="text-white ml-1.5" />
           </div>
       )}
 
-      <div className="absolute top-3 right-3 bg-green-600 text-white text-sm font-bold px-2 py-1 rounded-md pointer-events-none">
+      <div className="absolute top-4 right-4 bg-green-500/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full pointer-events-none shadow-md tracking-wide">
         Vidify Stream
       </div>
       
       {isSharePanelOpen && (
-        <div className="absolute bottom-16 right-4 bg-gray-800 p-3 rounded-lg shadow-lg z-20 flex items-center gap-3">
-            <button onClick={() => handleShare('facebook')} className="p-2 rounded-full hover:bg-gray-700 transition-colors"><FaFacebook size={22} className="text-blue-600" /></button>
-            <button onClick={() => handleShare('twitter')} className="p-2 rounded-full hover:bg-gray-700 transition-colors"><FaTwitter size={22} className="text-sky-500" /></button>
-            <button onClick={() => handleShare('whatsapp')} className="p-2 rounded-full hover:bg-gray-700 transition-colors"><FaWhatsapp size={22} className="text-green-500" /></button>
-            <button onClick={() => handleShare('telegram')} className="p-2 rounded-full hover:bg-gray-700 transition-colors"><FaTelegram size={22} className="text-sky-400" /></button>
-            <div className="w-px h-6 bg-gray-600"></div>
-            <button onClick={handleCopyLink} className="p-2 rounded-full hover:bg-gray-700 transition-colors"><FaCopy size={20} className="text-gray-300" /></button>
+        <div className="absolute bottom-20 right-4 bg-slate-900/95 backdrop-blur-md border border-slate-700 p-3 rounded-2xl shadow-2xl z-20 flex items-center gap-2">
+            <button onClick={() => handleShare('facebook')} className="p-2.5 rounded-full hover:bg-slate-800 transition-colors"><FaFacebook size={20} className="text-[#1877F2]" /></button>
+            <button onClick={() => handleShare('twitter')} className="p-2.5 rounded-full hover:bg-slate-800 transition-colors"><FaTwitter size={20} className="text-[#1DA1F2]" /></button>
+            <button onClick={() => handleShare('whatsapp')} className="p-2.5 rounded-full hover:bg-slate-800 transition-colors"><FaWhatsapp size={20} className="text-[#25D366]" /></button>
+            <button onClick={() => handleShare('telegram')} className="p-2.5 rounded-full hover:bg-slate-800 transition-colors"><FaTelegram size={20} className="text-[#0088cc]" /></button>
+            <div className="w-px h-6 bg-slate-700 mx-1"></div>
+            <button onClick={handleCopyLink} className="p-2.5 rounded-full hover:bg-slate-800 transition-colors"><FaCopy size={18} className="text-slate-300" /></button>
         </div>
       )}
 
-      <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`absolute bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-300 ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <input
           type="range"
           min="0"
           max="100"
           value={progress}
           onChange={handleProgressInteraction}
-          className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer range-sm"
+          className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer hover:h-2 transition-all accent-blue-500 mb-4"
         />
-        <div className="flex items-center justify-between text-white mt-2">
-          <div className="flex items-center gap-4">
-            <button onClick={handleMainInteraction}>
+        <div className="flex items-center justify-between text-white px-2">
+          <div className="flex items-center gap-5">
+            <button onClick={handleMainInteraction} className="hover:text-blue-400 transition-colors">
               {isPlaying ? <FaPause size={20} /> : <FaPlay size={20} />}
             </button>
-            <div className="flex items-center gap-2">
-                <button onClick={toggleMute}>{isMuted || volume === 0 ? <FaVolumeMute size={20} /> : <FaVolumeUp size={20} />}</button>
-                <input type="range" min="0" max="1" step="0.1" value={volume} onChange={handleVolumeChange} className="w-20 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer" />
+            <div className="flex items-center gap-3 group">
+                <button onClick={toggleMute} className="hover:text-blue-400 transition-colors">{isMuted || volume === 0 ? <FaVolumeMute size={20} /> : <FaVolumeUp size={20} />}</button>
+                <input type="range" min="0" max="1" step="0.1" value={volume} onChange={handleVolumeChange} className="w-0 group-hover:w-24 opacity-0 group-hover:opacity-100 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer transition-all duration-300 accent-blue-500 origin-left" />
             </div>
+            <span className="text-sm font-medium text-slate-300 hidden sm:block tracking-wide">{formatTime(currentTime)} / {formatTime(duration)}</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
-            <button onClick={() => setIsSharePanelOpen(!isSharePanelOpen)} className={`transition-colors ${isSharePanelOpen ? 'text-green-400' : 'hover:text-green-400'}`}><FaShareAlt size={20} /></button>
-            <button onClick={toggleFullscreen}>{isFullscreen ? <FaCompress size={20} /> : <FaExpand size={20} />}</button>
+          <div className="flex items-center gap-5">
+            <button onClick={() => setIsSharePanelOpen(!isSharePanelOpen)} className={`transition-colors ${isSharePanelOpen ? 'text-blue-500' : 'hover:text-blue-400'}`}><FaShareAlt size={18} /></button>
+            <button onClick={toggleFullscreen} className="hover:text-blue-400 transition-colors">{isFullscreen ? <FaCompress size={18} /> : <FaExpand size={18} />}</button>
           </div>
         </div>
       </div>

@@ -47,7 +47,7 @@ const FluidPlayer: React.FC<FluidPlayerProps> = ({ src, title }) => {
             allowDownload: false,
             playButtonShowing: true,
             fillToContainer: false,
-            primaryColor: "#230fff",
+            primaryColor: "#3b82f6",
             posterImage: ""
           },
           vastOptions: {
@@ -76,9 +76,11 @@ const FluidPlayer: React.FC<FluidPlayerProps> = ({ src, title }) => {
   }, [src, title, uniqueId]);
 
   return (
-    <video ref={videoRef} id={uniqueId} style={{ width: '100%', height: '100%' }}>
-      <source src={src} type="video/mp4" />
-    </video>
+    <div className="rounded-xl overflow-hidden shadow-2xl shadow-black/50 border border-slate-800 bg-black">
+        <video ref={videoRef} id={uniqueId} style={{ width: '100%', height: '100%' }}>
+            <source src={src} type="video/mp4" />
+        </video>
+    </div>
   );
 };
 
