@@ -60,6 +60,7 @@ export function PlayVideo() {
         const response = await fetch('https://raw.githubusercontent.com/AgungDevlop/Viral/refs/heads/main/Video.json');
         const data: VideoData[] = await response.json();
         setVideos(data);
+        
         if (id) {
             const video = data.find(item => item.id === id);
             if (video) {
@@ -72,15 +73,11 @@ export function PlayVideo() {
               const bookmarks = JSON.parse(localStorage.getItem('plok_bookmarks') || '[]');
               setIsSaved(bookmarks.some((b: { id: string }) => b.id === id));
 
-              try {
-                const videoResponse = await fetch(video.Url);
-                const videoBlob = await videoResponse.blob();
-                setBlobUrl(URL.createObjectURL(videoBlob));
-              } catch (e) {
-                setBlobUrl(video.Url);
-              } finally {
-                setIsBuffering(false);
-              }
+              // PERBAIKAN: Langsung oper URL video ke blobUrl (menjadi source)
+              // tanpa melakukan fetch/download penuh menggunakan .blob()
+              setBlobUrl(video.Url);
+              setIsBuffering(false);
+
             } else {
               navigate('/');
             }
