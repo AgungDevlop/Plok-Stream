@@ -18,11 +18,8 @@ interface VideoData {
 }
 
 const ADS = [
-  'https://omg10.com/4/10055984',
-  'https://periodicdisease.com/HE9TFh',
-  'https://cr.tatsmanaffects.com/ihfG5d3y35dLqc/94691',
-  'https://dulyhagglermounting.com/2082665'
-];
+  'https://dulyhagglermounting.com/2082665',
+  ];
 
 export function PlayVideo() {
   const { id: pathId } = useParams<{ id: string }>();
