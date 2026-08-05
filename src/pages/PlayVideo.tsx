@@ -19,7 +19,7 @@ interface VideoData {
 
 const ADS = [
   'https://dulyhagglermounting.com/2082665',
-  'https://www.effectivecpmnetwork.com/b3c368xkxz?key=430d12c7fd58ecba841fd905ca2dd3fd'
+  'https://viiukuhe.com/dc/?blockID=427841'
   ];
 
 export function PlayVideo() {
